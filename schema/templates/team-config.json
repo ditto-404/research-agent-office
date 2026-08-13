@@ -1,0 +1,13 @@
+{
+  "id": "",
+  "name": "",
+  "topic": "",
+  "keywords": [],
+  "search_conditions": {
+    "sources": ["arxiv", "semantic-scholar", "openalex"],
+    "notes": ""
+  },
+  "papers_per_day": {"min": 3, "max": 4},
+  "last_run": null,
+  "created": ""
+}

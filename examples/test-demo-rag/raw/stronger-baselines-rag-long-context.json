@@ -1,0 +1,14 @@
+{
+  "slug": "stronger-baselines-rag-long-context",
+  "title": "Stronger Baselines for Retrieval-Augmented Generation with Long-Context Language Models",
+  "authors": ["Alex Laitenberger", "Christopher D. Manning", "Nelson F. Liu"],
+  "year": 2025,
+  "journal": "arXiv preprint (accepted EMNLP 2025)",
+  "doi": "",
+  "url": "https://arxiv.org/abs/2506.03989",
+  "abstract": "The paper investigates whether sophisticated multi-stage retrieval-augmented generation (RAG) systems remain beneficial as long-context language models grow more capable. The researchers compare two advanced pipelines, ReadAgent and RAPTOR, against simpler baselines, particularly DOS RAG. DOS RAG consistently matches or outperforms more intricate methods on multiple long-context QA benchmarks, attributed to maintaining document structure, maximizing recall within token limits, and avoiding unnecessary complexity. The authors propose DOS RAG as a standard baseline for future RAG research.",
+  "source_api": "arxiv",
+  "source_type": "abstract-only",
+  "collected_at": "2026-08-13",
+  "collected_by_team": "test-demo-rag"
+}

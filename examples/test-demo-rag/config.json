@@ -1,0 +1,13 @@
+{
+  "id": "test-demo-rag",
+  "name": "Test Demo - RAG",
+  "topic": "파이프라인 검증용 테스트 팀. Retrieval-Augmented Generation(RAG) 최신 연구 동향 추적.",
+  "keywords": ["retrieval-augmented generation", "RAG", "long-context retrieval"],
+  "search_conditions": {
+    "sources": ["arxiv", "semantic-scholar", "openalex"],
+    "notes": "파이프라인 실동작 검증용 임시 팀"
+  },
+  "papers_per_day": {"min": 3, "max": 4},
+  "last_run": "2026-08-13",
+  "created": "2026-08-13"
+}

@@ -1,0 +1,14 @@
+{
+  "slug": "rag-comprehensive-survey-architectures",
+  "title": "Retrieval-Augmented Generation: A Comprehensive Survey of Architectures, Enhancements, and Robustness Frontiers",
+  "authors": ["Chaitanya Sharma"],
+  "year": 2025,
+  "journal": "arXiv preprint",
+  "doi": "",
+  "url": "https://arxiv.org/abs/2506.00054",
+  "abstract": "Retrieval-Augmented Generation (RAG) has emerged as a powerful paradigm to enhance large language models (LLMs) by conditioning generation on external evidence retrieved at inference time. The survey organizes RAG systems into four architectural categories: retriever-centric, generator-centric, hybrid, and robustness-oriented approaches, analyzing improvements in retrieval optimization, context filtering, and efficiency, then evaluating these on question-answering benchmarks. Key findings highlight recurring trade-offs between retrieval precision and generation flexibility, efficiency and faithfulness, and modularity and coordination. The work concludes by identifying emerging research areas including adaptive retrieval, real-time integration, multi-hop reasoning, and privacy-aware mechanisms for future RAG development.",
+  "source_api": "arxiv",
+  "source_type": "abstract-only",
+  "collected_at": "2026-08-13",
+  "collected_by_team": "test-demo-rag"
+}
