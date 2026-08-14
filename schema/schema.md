@@ -276,7 +276,7 @@ PDF는 `/paper-review-pdf <team-id>`로 반영한다. **사용자는 PDF를 아�
 자리에 실제 내용을 채운다 - 지침 문장이 실제 페이지에 그대로 남아있으면 안
 된다.
 
-```markdown
+````markdown
 ---
 title: "{논문 제목(영문 원제)}"
 authors: []
@@ -488,7 +488,7 @@ style="width:100%; table-layout: fixed;">`로 페이지 너비에 맞춘 고정
 
 ## 주요 인용 문헌
 - 
-```
+````
 
 `importance`와 `read`는 Paper Collector가 초안으로 채우되(예: 신규 반영 논문은
 `read: true`, importance는 팀 연구와의 관련성으로 판단), 사용자가 Obsidian에서
