@@ -357,12 +357,6 @@ examples/
   팀의 존재를 알 수 없도록 설계했습니다. 이렇게 하면 팀 추가와 삭제가 항상
   레지스트리에서 등록하거나 해제하는 단일 절차를 거치게 되어, 팀 폴더는 있는데
   레지스트리엔 없는 상태나 그 반대인 상태가 생기지 않습니다.
-- **팀 id와 표시 이름을 분리하지 않는 이유**: 초기 버전에서는 Journal Watch 타입
-  팀의 id를 `journal-watch`로 고정했다가, 표시 이름은 별도로 `Trend Watch`처럼
-  지은 적이 있습니다. id와 표시 이름이 다르면 어느 쪽이 진짜 식별자인지 헷갈리기
-  때문에, 지금은 팀을 만들 때 id와 표시 이름을 같은 이름으로 통일하도록 안내합니다
-  (`type` 필드만 `journal-watch`로 고정되고, id는 자유롭게 지어도 됩니다 - 예:
-  `examples/test-demo-rag/`).
 
 ## 개발 상태
 
@@ -797,13 +791,6 @@ examples/
   cannot tell the pipeline a team exists. Routing every add or remove
   through a single registry means a team folder can never exist without a
   matching registry entry, or vice versa.
-- **Why team id and display name are kept identical**: an earlier version
-  fixed the Journal Watch team's id to `journal-watch` while giving it a
-  separate display name like "Trend Watch." Having a different id and
-  display name made it unclear which one was the real identifier, so teams
-  are now named so id and display name match (only the `type` field stays
-  fixed as `journal-watch`; the id itself is free to choose - see
-  `examples/test-demo-rag/`).
 
 ## Development status
 
