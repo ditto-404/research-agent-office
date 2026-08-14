@@ -30,28 +30,71 @@ private 저장소에서 관리합니다. 이 구조를 그대로 가져다 자�
 ## 동작 원리
 
 ```mermaid
-flowchart LR
-    A["저널 / 웹 검색"]:::input --> B["Paper Collector<br/>/paper-collect"]:::process
-    B --> C["raw 메타데이터"]:::output
-    B --> D["위키 papers 요약"]:::output
-    D --> E["Research Synthesizer<br/>/synthesize"]:::process
-    E --> F["synthesis/latest.md"]:::output
-    F --> G["Research Advisor<br/>/advise (Research Team 전용)"]:::process
-    G --> H["advisor/latest.md"]:::output
+flowchart TB
+    accTitle: Research Office 파이프라인 전체 흐름
+    accDescr: 웹 검색이나 사용자가 넣은 PDF가 Paper Collector를 거쳐 raw 메타데이터(사실)와 위키 논문 요약(해석)으로 갈라지고, 전문을 못 구한 논문은 wanted.md 후보로만 남는다. Research Synthesizer가 위키 전체를 종합하고, Research Advisor가 이를 연구 프로필과 연결한다. 점선으로 표시된 스킬 노드는 각 단계가 결과를 확정하기 전에 자문받는 외부/로컬 스킬이다.
 
-    classDef input fill:#F5F5F5,stroke:#616161,color:#212121
-    classDef process fill:#E0E0E0,stroke:#424242,color:#212121
-    classDef output fill:#EEEEEE,stroke:#000000,color:#000000
-    classDef pending fill:#BDBDBD,stroke:#212121,color:#212121,stroke-dasharray: 4 2
+    subgraph collector_group ["1. Paper Collector"]
+        source["웹 검색 / PDF"]
+        collector["/paper-collect<br/>/paper-review-pdf"]
+        mermaid_skill["markdown-mermaid-writing<br/>(로컬 스킬)"]
+        raw["raw/{slug}.json<br/>(사실)"]
+        wiki_paper["papers/{slug}.md<br/>(해석)"]
+        wanted["wanted.md<br/>(후보만, 미반영)"]
+    end
+
+    subgraph synth_group ["2. Research Synthesizer"]
+        synth["/synthesize"]
+        deep_research_1["deep-research<br/>(lit-review/quick)"]
+        synthesis["synthesis/latest.md"]
+    end
+
+    subgraph advisor_group ["3. Research Advisor (Research Team 전용)"]
+        advisor["/advise"]
+        my_research["my-research.md"]
+        deep_research_2["deep-research<br/>(quick, Gap 검증)"]
+        advisor_out["advisor/latest.md"]
+    end
+
+    source --> collector
+    collector -.->|스타일 참고| mermaid_skill
+    collector -->|전문 확보| raw
+    collector -->|전문 확보| wiki_paper
+    collector -->|전문 미확보, 관련성 높음| wanted
+    raw -->|근거| wiki_paper
+
+    wiki_paper --> synth
+    synth -.->|커버리지 점검| deep_research_1
+    synth -->|전면 재작성| synthesis
+
+    synthesis --> advisor
+    my_research --> advisor
+    advisor -.->|gap 검증, advisory| deep_research_2
+    advisor -->|전면 재작성| advisor_out
+
+    classDef process_style fill:#232522,stroke:#111111,stroke-width:2px,color:#f5f3ec
+    classDef fact_style fill:#e9eeec,stroke:#4c5b60,stroke-width:2px,color:#2c3a3d
+    classDef wiki_style fill:#f6efde,stroke:#8a6f45,stroke-width:2px,color:#4a3b22
+    classDef skill_style fill:none,stroke:#a85e1a,stroke-width:2px,stroke-dasharray:4 3,color:#7a4712
+
+    class collector,synth,advisor process_style
+    class source,raw,my_research fact_style
+    class wiki_paper,synthesis,advisor_out,wanted wiki_style
+    class mermaid_skill,deep_research_1,deep_research_2 skill_style
 ```
+
+색으로 두 가지를 구분합니다: 회색(진회색 박스)은 파이프라인 단계(커맨드), 차가운
+연회색은 검증된 사실(`raw/`, 원본 그대로), 따뜻한 베이지는 AI가 작성한 위키
+해석입니다. 점선 테두리 박스는 각 단계가 결과를 확정하기 전에 자문받는 스킬로,
+자문 결과는 참고용일 뿐 위키 내용을 무시하고 결론을 뒤집지 않습니다.
 
 ### 파이프라인 한눈에 보기
 
-| 단계 | 커맨드 | 무엇을 하는가 | 스킬 연동 | 산출물 |
-|---|---|---|---|---|
-| 1. Paper Collector | `/paper-collect <team-id>` | 팀 설정(저널/주제/키워드)과 연구 프로필 기준으로 신규 논문을 웹에서 찾아 사용자 확인을 받고, 전문을 확보한 논문만 정식 반영 | 논문 요약 페이지의 Research Framework 다이어그램을 그릴 때 로컬 프로젝트 스킬 `markdown-mermaid-writing`의 스타일 가이드(그레이스케일 팔레트, subgraph 복잡도 등급)를 따릅니다 | `raw/{slug}.json`, `papers/{slug}.md`, 관련 `concepts/`·`comparisons/` 갱신, 전문 미확보 논문은 `wanted.md` |
-| 2. Research Synthesizer | `/synthesize <team-id>` | 팀 위키 전체(papers/concepts/comparisons)를 다시 읽고 연구 동향 종합을 전면 재작성 | 외부 플러그인 `academic-research-skills`의 `deep-research` 스킬을 lit-review/quick 모드로 호출해, 지금까지 모은 논문의 검색 커버리지와 놓친 축이 없는지 점검받습니다. 점검 결과는 이 프로젝트의 Synthesis 템플릿 형식으로 다시 정리해서 씁니다(deep-research의 자체 출력 형식을 그대로 붙여넣지 않습니다) | `synthesis/latest.md` (이전 버전은 `synthesis/history/`로 이동) |
-| 3. Research Advisor | `/advise <team-id>` (Research Team 전용) | 방금 만든 synthesis와 이 팀의 연구 프로필(`my-research.md`)을 근거로, 사용자 자신의 연구와 연결한 이론적 고찰·research gap·시사점을 작성 | Research Gap 초안의 각 후보를 `deep-research` 스킬 quick 모드로 점검해, 이 팀의 위키 밖 문헌에서 이미 다뤄진 주제는 아닌지 확인합니다(경고 신호일 뿐 gap을 기각하는 용도는 아닙니다) | `advisor/latest.md` (이전 버전은 `advisor/history/`로 이동) |
+| 단계 | 커맨드 | 스킬 연동 | 산출물 |
+|---|---|---|---|
+| 1. Paper Collector | `/paper-collect`<br>`/paper-review-pdf` | `markdown-mermaid-writing`<br>(로컬, 다이어그램 스타일) | `raw/{slug}.json`<br>`papers/{slug}.md` |
+| 2. Research Synthesizer | `/synthesize` | `deep-research`<br>(lit-review/quick, 커버리지 점검) | `synthesis/latest.md` |
+| 3. Research Advisor | `/advise`<br>(Research Team 전용) | `deep-research`<br>(quick, Research Gap 검증) | `advisor/latest.md` |
 
 세 단계 각각이 정확히 무엇을 하는지는 아래에서 자세히 설명합니다.
 
@@ -154,10 +197,10 @@ Watch 타입 팀에는 이 단계와 연구 프로필 자체가 없습니다 - �
 이 파이프라인은 외부 플러그인 스킬 하나와 로컬 프로젝트 스킬 하나, 두 가지 방식으로
 Claude Code의 Skill 생태계를 씁니다.
 
-| 스킬 | 연동 방식 | 어느 커맨드가 쓰는가 | 용도 |
+| 스킬 | 연결 방식 | 사용 커맨드 | 용도 |
 |---|---|---|---|
-| `deep-research` (외부 플러그인 `academic-research-skills`) | `.claude/settings.json`의 `skillDirectories`로 이 프로젝트 범위에서만 연결. Skill 도구로 호출을 시도하고, 세션에 아직 로드되지 않아 Skill 도구 목록에 안 보이면 해당 플러그인 폴더의 `SKILL.md`를 직접 Read해서 그 방법론만 참고하는 폴백을 씁니다 | `/synthesize` (lit-review/quick 모드로 검색 커버리지 점검), `/advise` (quick 모드로 Research Gap 후보를 위키 밖 문헌과 대조 검증), `/my-research-setup` (Socratic guided research dialogue 모드로 연구 질문 정식화), `/concept-review` (quick 모드로 병합/재구성 후보 재검토) | 이 네 커맨드 모두 deep-research의 결과를 그대로 붙여넣지 않고, 이 프로젝트 자체의 템플릿 형식으로 재구성해서 씁니다 |
-| `markdown-mermaid-writing` (로컬 프로젝트 스킬, `.claude/skills/` 아래 직접 복제) | `.claude/skills/` 아래 있으면 `skillDirectories` 설정 없이도 자동 인식되므로, 위 폴백 경로가 필요 없습니다 | `/paper-collect`, `/paper-review-pdf` (논문 요약 페이지의 Research Framework 다이어그램 작성 시) | subgraph 복잡도 등급, `classDef` 색상 규칙, 접근성(`accTitle`/`accDescr`) 스타일 가이드를 그대로 따르되, 이 프로젝트는 그레이스케일 4단 팔레트로 커스터마이즈해서 씁니다 |
+| `deep-research`<br>(외부 플러그인) | `skillDirectories`로 연결<br>안 뜨면 `SKILL.md` 직접 참고 | `/synthesize`<br>`/advise`<br>`/my-research-setup`<br>`/concept-review` | 검색 커버리지 점검<br>Research Gap 검증<br>연구 질문 정식화<br>병합 후보 재검토 |
+| `markdown-mermaid-writing`<br>(로컬 스킬) | `.claude/skills/`에 있어<br>자동 인식(폴백 불필요) | `/paper-collect`<br>`/paper-review-pdf` | Research Framework<br>다이어그램 스타일 |
 
 저널 우선순위 판단(어떤 저널이 해당 분야에서 저명한지)에는 `academic-research-skills`
 플러그인의 `academic-paper-reviewer` 참고 자료(`top_journals_by_field.md`)도
@@ -389,28 +432,72 @@ for their own research.
 ## How it works
 
 ```mermaid
-flowchart LR
-    A["Journals / web search"]:::input --> B["Paper Collector<br/>/paper-collect"]:::process
-    B --> C["raw metadata"]:::output
-    B --> D["wiki paper summary"]:::output
-    D --> E["Research Synthesizer<br/>/synthesize"]:::process
-    E --> F["synthesis/latest.md"]:::output
-    F --> G["Research Advisor<br/>/advise (Research Team only)"]:::process
-    G --> H["advisor/latest.md"]:::output
+flowchart TB
+    accTitle: The full Research Office pipeline
+    accDescr: A web search or a PDF the user supplies passes through Paper Collector and splits into raw metadata (fact) and a wiki paper summary (interpretation), while papers whose full text can't be obtained stay as wanted.md candidates only. Research Synthesizer synthesizes the whole wiki, and Research Advisor connects that to the research profile. Dashed skill nodes are the outside or local skills each stage consults before finalizing its output.
 
-    classDef input fill:#F5F5F5,stroke:#616161,color:#212121
-    classDef process fill:#E0E0E0,stroke:#424242,color:#212121
-    classDef output fill:#EEEEEE,stroke:#000000,color:#000000
-    classDef pending fill:#BDBDBD,stroke:#212121,color:#212121,stroke-dasharray: 4 2
+    subgraph collector_group ["1. Paper Collector"]
+        source["Web search / PDF"]
+        collector["/paper-collect<br/>/paper-review-pdf"]
+        mermaid_skill["markdown-mermaid-writing<br/>(local skill)"]
+        raw["raw/{slug}.json<br/>(fact)"]
+        wiki_paper["papers/{slug}.md<br/>(interpretation)"]
+        wanted["wanted.md<br/>(candidate only)"]
+    end
+
+    subgraph synth_group ["2. Research Synthesizer"]
+        synth["/synthesize"]
+        deep_research_1["deep-research<br/>(lit-review/quick)"]
+        synthesis["synthesis/latest.md"]
+    end
+
+    subgraph advisor_group ["3. Research Advisor (Research Team only)"]
+        advisor["/advise"]
+        my_research["my-research.md"]
+        deep_research_2["deep-research<br/>(quick, gap check)"]
+        advisor_out["advisor/latest.md"]
+    end
+
+    source --> collector
+    collector -.->|style guide| mermaid_skill
+    collector -->|full text obtained| raw
+    collector -->|full text obtained| wiki_paper
+    collector -->|no full text, relevant| wanted
+    raw -->|grounds| wiki_paper
+
+    wiki_paper --> synth
+    synth -.->|checks coverage| deep_research_1
+    synth -->|rewrites from scratch| synthesis
+
+    synthesis --> advisor
+    my_research --> advisor
+    advisor -.->|gap check, advisory| deep_research_2
+    advisor -->|rewrites from scratch| advisor_out
+
+    classDef process_style fill:#232522,stroke:#111111,stroke-width:2px,color:#f5f3ec
+    classDef fact_style fill:#e9eeec,stroke:#4c5b60,stroke-width:2px,color:#2c3a3d
+    classDef wiki_style fill:#f6efde,stroke:#8a6f45,stroke-width:2px,color:#4a3b22
+    classDef skill_style fill:none,stroke:#a85e1a,stroke-width:2px,stroke-dasharray:4 3,color:#7a4712
+
+    class collector,synth,advisor process_style
+    class source,raw,my_research fact_style
+    class wiki_paper,synthesis,advisor_out,wanted wiki_style
+    class mermaid_skill,deep_research_1,deep_research_2 skill_style
 ```
+
+The colors carry two distinctions: dark boxes are pipeline stages (commands);
+cool grey is verified fact (`raw/`, untouched from the source); warm beige is
+AI-written wiki interpretation. Dashed-border boxes are the skills each stage
+consults before finalizing its output - consulted for input, never allowed to
+overrule what the wiki already says.
 
 ### Pipeline at a glance
 
-| Stage | Command | What it does | Skill integration | Output |
-|---|---|---|---|---|
-| 1. Paper Collector | `/paper-collect <team-id>` | Searches the web for new papers based on the team's configuration (journals/topic/keywords) and research profile, shows the list to the user for confirmation, and ingests only the papers whose full text it could actually obtain | Follows the local project skill `markdown-mermaid-writing`'s style guide (grayscale palette, subgraph complexity tiers) when drawing the Research Framework diagram in each paper summary page | `raw/{slug}.json`, `papers/{slug}.md`, updates to related `concepts/`/`comparisons/`; papers without full text go to `wanted.md` |
-| 2. Research Synthesizer | `/synthesize <team-id>` | Re-reads the entire team wiki (papers/concepts/comparisons) and rewrites the research trend synthesis from scratch | Calls the `deep-research` skill from the external `academic-research-skills` plugin in lit-review/quick mode to check whether search coverage is adequate and whether any angle was missed. The result is rewritten into this project's own Synthesis template rather than pasted as-is | `synthesis/latest.md` (previous version moved to `synthesis/history/`) |
-| 3. Research Advisor | `/advise <team-id>` (Research Team only) | Uses the freshly written synthesis and this team's research profile (`my-research.md`) to produce a theoretical discussion, research gaps, and implications tied to the user's own work | Checks each draft Research Gap candidate with the `deep-research` skill in quick mode, to see whether it's already covered in literature outside this team's wiki (an advisory signal, not grounds for dismissing a gap) | `advisor/latest.md` (previous version moved to `advisor/history/`) |
+| Stage | Command | Skill integration | Output |
+|---|---|---|---|
+| 1. Paper Collector | `/paper-collect`<br>`/paper-review-pdf` | `markdown-mermaid-writing`<br>(local, diagram style) | `raw/{slug}.json`<br>`papers/{slug}.md` |
+| 2. Research Synthesizer | `/synthesize` | `deep-research`<br>(lit-review/quick, checks coverage) | `synthesis/latest.md` |
+| 3. Research Advisor | `/advise`<br>(Research Team only) | `deep-research`<br>(quick, validates Research Gap) | `advisor/latest.md` |
 
 What each of the three stages does in detail follows below.
 
@@ -535,10 +622,10 @@ since they aren't tied to a specific research topic.
 This pipeline uses Claude Code's skill ecosystem in two different ways: one
 external plugin skill and one local project skill.
 
-| Skill | How it's wired in | Which commands use it | Purpose |
+| Skill | How it's wired in | Used by | Purpose |
 |---|---|---|---|
-| `deep-research` (external plugin `academic-research-skills`) | Connected only within this project's scope via `skillDirectories` in `.claude/settings.json`. Each command first tries calling it through the Skill tool; if the session hasn't loaded it yet and it doesn't show up in the Skill tool list, the command falls back to reading that plugin folder's `SKILL.md` directly and following its methodology | `/synthesize` (checks search coverage in lit-review/quick mode), `/advise` (quick mode, cross-checks Research Gap candidates against literature outside the wiki), `/my-research-setup` (formalizes research questions via Socratic guided research dialogue mode), `/concept-review` (re-vets merge/restructure candidates in quick mode) | All four commands rewrite deep-research's output into this project's own template format rather than pasting it in as-is |
-| `markdown-mermaid-writing` (local project skill, cloned directly under `.claude/skills/`) | Auto-recognized simply by living under `.claude/skills/`, with no `skillDirectories` entry needed - so the fallback path above never applies to it | `/paper-collect`, `/paper-review-pdf` (when drawing the Research Framework diagram in a paper summary page) | Follows the style guide's subgraph complexity tiers, `classDef` color rules, and accessibility (`accTitle`/`accDescr`) conventions, customized for this project into a four-step grayscale palette |
+| `deep-research`<br>(external plugin) | Connected via `skillDirectories`<br>falls back to reading `SKILL.md` | `/synthesize`<br>`/advise`<br>`/my-research-setup`<br>`/concept-review` | Checks search coverage<br>Validates Research Gap<br>Formalizes research questions<br>Re-vets merge candidates |
+| `markdown-mermaid-writing`<br>(local skill) | Lives under `.claude/skills/`<br>auto-recognized, no fallback needed | `/paper-collect`<br>`/paper-review-pdf` | Research Framework<br>diagram style |
 
 Journal prioritization (deciding which journals are well-regarded in a given
 field) also draws on the `academic-research-skills` plugin's
