@@ -1,7 +1,7 @@
 # research-agent-office (리서치 에이전트 오피스)
 
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-Agent%20Pipeline-5A67D8?style=flat-square)
-![Commands](https://img.shields.io/badge/slash%20commands-11-2E7D32?style=flat-square)
+![Commands](https://img.shields.io/badge/slash%20commands-12-2E7D32?style=flat-square)
 ![Status](https://img.shields.io/badge/status-public%20template-lightgrey?style=flat-square)
 [![한국어](https://img.shields.io/badge/lang-한국어-lightgrey?style=social&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiIC8+PHBhdGggZD0iTTMgMTJhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMCAwIC0xOCAwIiAvPjxwYXRoIGQ9Ik0zLjYgOWgxNi44IiAvPjxwYXRoIGQ9Ik0zLjYgMTVoMTYuOCIgLz48cGF0aCBkPSJNMTEuNSAzYTE3IDE3IDAgMCAwIDAgMTgiIC8+PHBhdGggZD0iTTEyLjUgM2ExNyAxNyAwIDAgMSAwIDE4IiAvPjwvc3ZnPg==)](#research-agent-office-리서치-에이전트-오피스)
 [![English](https://img.shields.io/badge/lang-English-lightgrey?style=social&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiIC8+PHBhdGggZD0iTTMgMTJhOSA5IDAgMSAwIDE4IDBhOSA5IDAgMCAwIC0xOCAwIiAvPjxwYXRoIGQ9Ik0zLjYgOWgxNi44IiAvPjxwYXRoIGQ9Ik0zLjYgMTVoMTYuOCIgLz48cGF0aCBkPSJNMTEuNSAzYTE3IDE3IDAgMCAwIDAgMTgiIC8+PHBhdGggZD0iTTEyLjUgM2ExNyAxNyAwIDAgMSAwIDE4IiAvPjwvc3ZnPg==)](#english)
@@ -45,7 +45,20 @@ flowchart LR
     classDef pending fill:#BDBDBD,stroke:#212121,color:#212121,stroke-dasharray: 4 2
 ```
 
+### 파이프라인 한눈에 보기
+
+| 단계 | 커맨드 | 무엇을 하는가 | 스킬 연동 | 산출물 |
+|---|---|---|---|---|
+| 1. Paper Collector | `/paper-collect <team-id>` | 팀 설정(저널/주제/키워드)과 연구 프로필 기준으로 신규 논문을 웹에서 찾아 사용자 확인을 받고, 전문을 확보한 논문만 정식 반영 | 논문 요약 페이지의 Research Framework 다이어그램을 그릴 때 로컬 프로젝트 스킬 `markdown-mermaid-writing`의 스타일 가이드(그레이스케일 팔레트, subgraph 복잡도 등급)를 따릅니다 | `raw/{slug}.json`, `papers/{slug}.md`, 관련 `concepts/`·`comparisons/` 갱신, 전문 미확보 논문은 `wanted.md` |
+| 2. Research Synthesizer | `/synthesize <team-id>` | 팀 위키 전체(papers/concepts/comparisons)를 다시 읽고 연구 동향 종합을 전면 재작성 | 외부 플러그인 `academic-research-skills`의 `deep-research` 스킬을 lit-review/quick 모드로 호출해, 지금까지 모은 논문의 검색 커버리지와 놓친 축이 없는지 점검받습니다. 점검 결과는 이 프로젝트의 Synthesis 템플릿 형식으로 다시 정리해서 씁니다(deep-research의 자체 출력 형식을 그대로 붙여넣지 않습니다) | `synthesis/latest.md` (이전 버전은 `synthesis/history/`로 이동) |
+| 3. Research Advisor | `/advise <team-id>` (Research Team 전용) | 방금 만든 synthesis와 이 팀의 연구 프로필(`my-research.md`)을 근거로, 사용자 자신의 연구와 연결한 이론적 고찰·research gap·시사점을 작성 | 외부 스킬 연동 없음. synthesis와 my-research.md만 근거로 삼습니다 | `advisor/latest.md` (이전 버전은 `advisor/history/`로 이동) |
+
+세 단계 각각이 정확히 무엇을 하는지는 아래에서 자세히 설명합니다.
+
 ### 1단계, Paper Collector (`/paper-collect <team-id>`)
+
+**역할**: 팀이 관심 있는 논문을 웹에서 찾아, 원문을 실제로 읽을 수 있는 것만
+위키에 정식으로 반영하는 수집 담당입니다.
 
 1. 팀 설정을 확인합니다. Journal Watch 타입 팀은 저널 목록(또는 저널 없이 분야만
    지정된 상태)을, Research Team은 주제, 키워드, 그리고 이 팀의 연구
@@ -64,30 +77,85 @@ flowchart LR
 5. 확인된 논문마다 **전문(full text) 확보를 먼저 시도합니다.** 오픈 액세스
    논문(arXiv, 오픈 액세스 저널, PMC, 기관 리포지토리 등)이면 WebFetch로 전문을
    직접 읽고, 그 내용을 근거로 방법론·핵심 기여·한계를 구체적으로 정리해 raw
-   메타데이터와 위키 논문 요약 페이지를 작성합니다. **초록만 확보되는 논문은
-   raw와 위키에 아예 반영하지 않습니다.** 페이월 등으로 전문에 실제로 접근할 수
-   없으면, 이 팀의 연구와 관련성이 높아 보이는 논문만 골라 `wanted.md`에
-   후보로 올리고 나머지는 건너뜁니다. 관련 개념 페이지를 갱신하거나 새로
-   만들고, 기존 논문과 방법론적으로 대조되는 지점이 있으면 비교 페이지도
-   갱신합니다.
+   메타데이터와 위키 논문 요약 페이지를 작성합니다. 이 요약 페이지의 Research
+   Framework 섹션(연구 파이프라인을 mermaid 다이어그램으로 그리는 부분)은 항상
+   로컬 프로젝트 스킬 `markdown-mermaid-writing`의 스타일 가이드를 따릅니다.
+   **초록만 확보되는 논문은 raw와 위키에 아예 반영하지 않습니다.** 페이월 등으로
+   전문에 실제로 접근할 수 없으면, 이 팀의 연구와 관련성이 높아 보이는 논문만
+   골라 `wanted.md`에 후보로 올리고 나머지는 건너뜁니다. 관련 개념 페이지를
+   갱신하거나 새로 만들고, 기존 논문과 방법론적으로 대조되는 지점이 있으면
+   비교 페이지도 갱신합니다.
+
+**산출물**: `raw/{slug}.json`(사실 정보만), `papers/{slug}.md`(AI 해석 요약, 6개
+섹션 고정 템플릿), 관련 `concepts/`·`comparisons/` 갱신, 전문을 못 구한 논문은
+`wanted.md`.
 
 페이월에 막혀 전문을 못 구한 논문은 `wanted.md`에서 확인하고, PDF를 직접 구했다면
 `/paper-review-pdf <team-id>`를 씁니다. 팀의 `raw/` 폴더에 넣어둔 PDF 중 아직
 처리되지 않은 파일을 찾아 전문을 읽고 반영하며, 반영에 성공하면 `wanted.md`에서도
-해당 항목을 제거합니다. 동작 방식은 아래 "PDF 원문 직접 반영" 절에서 자세히
-설명합니다.
+해당 항목을 제거합니다. 이 경로도 Research Framework 다이어그램 작성 시 같은
+`markdown-mermaid-writing` 스타일 가이드를 따릅니다. 동작 방식은 아래 "PDF 원문
+직접 반영" 절에서 자세히 설명합니다.
 
 ### 2단계, Research Synthesizer (`/synthesize <team-id>`)
 
-팀 위키 전체(논문, 개념, 비교)를 다시 읽고 연구 동향 종합 문서를 전면 재작성합니다.
-부분 수정이 아니라 매번 새로 쓰는 방식이며, 이전 버전은 `synthesis/history/`로
-이동해 보존합니다.
+**역할**: 팀 위키에 쌓인 논문들을 한 걸음 물러나서 다시 읽고, 개별 논문 요약만
+봐서는 안 보이는 연구 동향을 종합하는 담당입니다.
+
+1. 팀의 `papers/`, `concepts/`, `comparisons/`를 전부 읽습니다. 논문이 한 편도
+   없으면 `/paper-collect`를 먼저 실행하라고 안내하고 중단합니다.
+2. **`deep-research` 스킬 연동**: 가능하면 Skill 도구로 외부 플러그인
+   `academic-research-skills`의 `deep-research`를 lit-review 또는 quick 모드로
+   호출해, 지금까지 모은 논문들의 검색 커버리지가 충분한지, cross-source
+   synthesis 관점에서 놓친 축은 없는지 점검받습니다. (`skillDirectories`
+   설정이 해석되지 않아 Skill 도구 목록에 안 보이는 세션이면, 같은
+   `academic-research-skills` 플러그인의 `deep-research/SKILL.md`를 직접 Read해서
+   그 방법론만 참고하는 폴백을 씁니다 - 아래 "스킬 연동" 절 참고.) 어느 경로든
+   최종 산출물은 이 프로젝트의 Synthesis 템플릿 형식으로 다시 씁니다.
+3. 기존 `synthesis/latest.md`가 있으면 `synthesis/history/{date}.md`로 옮깁니다.
+4. 최근 연구 동향, 핵심 개념 지도, 주요 방법론, emerging topics, 다루는 논문
+   전체 목록을 담아 `synthesis/latest.md`를 전면 재작성합니다. 부분 수정이 아니라
+   매번 새로 쓰는 방식입니다.
+5. `index.md`의 "Synthesis" 섹션과 최근 갱신 이력을 갱신합니다.
+
+**산출물**: `synthesis/latest.md` (이전 버전은 `synthesis/history/`로 보존).
 
 ### 3단계, Research Advisor (`/advise <team-id>`, Research Team 전용)
 
-방금 만든 연구 동향 종합과 이 팀의 연구 프로필(`my-research.md`)을 근거로, 사용자
-자신의 연구와 연결된 이론적 고찰, research gap, 최근 트렌드의 시사점을 만듭니다.
-Journal Watch 타입 팀에는 이 단계와 연구 프로필 자체가 없습니다.
+**역할**: 방금 만든 연구 동향 종합을, 이 팀을 운영하는 사용자 자신의 연구와
+직접 연결해서 "그래서 내 연구에는 무엇을 뜻하는가"를 답하는 담당입니다. Journal
+Watch 타입 팀에는 이 단계와 연구 프로필 자체가 없습니다 - 특정 연구 주제에
+묶이지 않는 팀이기 때문입니다.
+
+1. 팀의 `pipeline` 배열에 `advisor`가 없으면(Journal Watch 팀이면) 중단합니다.
+2. `synthesis/latest.md`가 없으면 `/synthesize`를 먼저 실행하라고 안내합니다.
+3. `my-research.md`(연구 프로필)를 읽습니다. 비어 있으면 `/my-research-setup`으로
+   채워달라고 안내하되, 있는 정보만으로 최대한 진행합니다.
+4. `synthesis/latest.md`와 팀 위키 전체(papers/concepts/comparisons)를 읽습니다.
+   **외부 스킬을 호출하지 않습니다** - 이 단계는 이미 Synthesizer가 deep-research로
+   검증한 종합과, 사용자가 직접 작성한 연구 프로필만을 근거로 삼습니다.
+5. 기존 `advisor/latest.md`가 있으면 `advisor/history/{date}.md`로 옮깁니다.
+6. 내 연구와의 관계, 이론적 고찰, Research Gap, 주요 비교/개념, 최근 트렌드가
+   내 연구에 주는 시사점을 담아 `advisor/latest.md`를 전면 재작성합니다. 모든
+   주장은 팀 위키의 `[[slug]]`로 근거를 표시합니다.
+7. `index.md`의 "Advisor" 섹션과 최근 갱신 이력을 갱신합니다.
+
+**산출물**: `advisor/latest.md` (이전 버전은 `advisor/history/`로 보존).
+
+## 스킬 연동
+
+이 파이프라인은 외부 플러그인 스킬 하나와 로컬 프로젝트 스킬 하나, 두 가지 방식으로
+Claude Code의 Skill 생태계를 씁니다.
+
+| 스킬 | 연동 방식 | 어느 커맨드가 쓰는가 | 용도 |
+|---|---|---|---|
+| `deep-research` (외부 플러그인 `academic-research-skills`) | `.claude/settings.json`의 `skillDirectories`로 이 프로젝트 범위에서만 연결. Skill 도구로 호출을 시도하고, 세션에 아직 로드되지 않아 Skill 도구 목록에 안 보이면 해당 플러그인 폴더의 `SKILL.md`를 직접 Read해서 그 방법론만 참고하는 폴백을 씁니다 | `/synthesize` (lit-review/quick 모드로 검색 커버리지 점검), `/my-research-setup` (Socratic guided research dialogue 모드로 연구 질문 정식화), `/concept-review` (quick 모드로 병합/재구성 후보 재검토) | 이 세 커맨드 모두 deep-research의 결과를 그대로 붙여넣지 않고, 이 프로젝트 자체의 템플릿 형식으로 재구성해서 씁니다 |
+| `markdown-mermaid-writing` (로컬 프로젝트 스킬, `.claude/skills/` 아래 직접 복제) | `.claude/skills/` 아래 있으면 `skillDirectories` 설정 없이도 자동 인식되므로, 위 폴백 경로가 필요 없습니다 | `/paper-collect`, `/paper-review-pdf` (논문 요약 페이지의 Research Framework 다이어그램 작성 시) | subgraph 복잡도 등급, `classDef` 색상 규칙, 접근성(`accTitle`/`accDescr`) 스타일 가이드를 그대로 따르되, 이 프로젝트는 그레이스케일 4단 팔레트로 커스터마이즈해서 씁니다 |
+
+저널 우선순위 판단(어떤 저널이 해당 분야에서 저명한지)에는 `academic-research-skills`
+플러그인의 `academic-paper-reviewer` 참고 자료(`top_journals_by_field.md`)도
+함께 씁니다. 정확한 연동 규칙은 [`schema/schema.md`](schema/schema.md)의 "외부
+스킬 연동" 섹션에 전부 정의되어 있습니다.
 
 ## 위키 구성
 
@@ -157,7 +225,7 @@ Collector, Research Synthesizer, Research Advisor 전 과정을 실행한 결과
    ```
    data/
      teams.json                      {"teams": []}로 시작
-     journal-watch/config.json       이름은 자유롭게 정해도 되지만, id와 폴더명은 통일하는 것을 권장
+     trend-watch/config.json         이름은 자유롭게 정해도 되지만, id와 폴더명은 통일하는 것을 권장
      teams/_template/config.json, my-research.md, raw/
    ```
    `my-research.md`(연구 프로필)는 `data/` 전역이 아니라 **Research Team 폴더
@@ -179,8 +247,7 @@ Collector, Research Synthesizer, Research Advisor 전 과정을 실행한 결과
 - `/paper-collect <team-id>` - 해당 팀 설정과 연구 프로필을 기준으로 오늘의
   신규 논문을 웹에서 검색합니다.
 - `/paper-review-pdf <team-id>` - 웹 검색이 아니라, 사용자가 직접 `raw/`에 넣어둔
-  PDF 원문을 전문 기반으로 검토해 위키에 반영합니다. PDF 파일명은 아무거나
-  넣어도 됩니다. 원문에서 제목과 연도를 읽어 표준 형식으로 자동 리네임합니다.
+  PDF 원문을 전문 기반으로 검토해 위키에 반영합니다.
 - `/synthesize <team-id>` - 지금까지 쌓인 위키를 분석해 연구 동향 종합을
   갱신합니다.
 - `/advise <team-id>` - (Research Team 전용) 종합 결과와 연구 프로필을 근거로
@@ -196,10 +263,11 @@ Collector, Research Synthesizer, Research Advisor 전 과정을 실행한 결과
   연결 가능해진 인용 백필링, 태그 근접 중복 정리, 여러 논문에 공통되지만 아직
   개념 페이지가 없는 것을 찾아 신설을 제안하는 것은 확인을 받은 뒤 실제로 고칩니다.
 - `/concept-review <team-id>` - `concepts/`와 `comparisons/` 전체를 서로 비교해
-  구조적 중복을 찾습니다. 사실상 같은 개념·비교를 다른 이름으로 따로 만든 경우를
-  병합하고, 신규 논문을 반영해 기존 개념 정의를 갱신하는 안을 확인 후 실제로
-  고칩니다. `wiki-review`가 개별 페이지 점검이라면, 이 커맨드는 concepts/
-  comparisons 폴더 전체의 구조를 다룹니다.
+  구조적 중복(사실상 같은 개념·비교를 다른 slug로 따로 만든 경우) 병합·재구성
+  후보를 찾습니다. `/wiki-review`가 페이지 단위 점검이라면, 이 커맨드는 개념/비교
+  페이지끼리 서로 비교하는 역할입니다. `deep-research` 스킬로 후보를 다시 검토한
+  뒤 확인받고 실제로 병합합니다. 병합으로 사라지는 페이지는 삭제하지 않고
+  리다이렉트 스텁으로 남깁니다.
 
 일반적인 하루 사용 흐름은 `/paper-collect <team-id>` 다음 `/synthesize <team-id>`
 순서이며, synthesis가 몇 차례 쌓인 뒤 `/advise <team-id>`를 실행합니다.
@@ -222,7 +290,7 @@ examples/
 |---|---|
 | `schema/schema.md` | 위키 폴더 구조, raw와 wiki의 저장 위치 분리 규칙, 문서별 템플릿, 저널 우선순위 판단 규칙을 전부 정의합니다. 모든 커맨드는 이 문서를 먼저 읽고 규칙을 적용하도록 지시받습니다. 규칙을 커맨드 프롬프트마다 중복 기술하지 않고 한 곳에만 두어, 규칙이 바뀌어도 커맨드를 일일이 고칠 필요가 없게 했습니다. |
 | `schema/templates/*` | 실제 문서를 쓸 때 채워 넣는 뼈대입니다. 논문 요약은 6단 고정 구성으로 강제해서, AI가 논문마다 다른 형식으로 요약해 위키 검색성이 떨어지는 상황을 막습니다. |
-| `.claude/commands/*.md` | 각 파일이 슬래시 커맨드 하나입니다. `paper-collect.md`, `synthesize.md`, `advise.md`가 핵심 파이프라인이고, 나머지는 팀 관리와 상태 조회를 담당합니다. |
+| `.claude/commands/*.md` | 각 파일이 슬래시 커맨드 하나입니다. `paper-collect.md`, `synthesize.md`, `advise.md`가 핵심 파이프라인이고, `wiki-review.md`·`concept-review.md`는 위키 정리를, 나머지는 팀 관리와 상태 조회를 담당합니다. |
 | `examples/test-demo-rag/` | 실제로 파이프라인을 돌려서 만든 완성된 팀 예시입니다. |
 
 ## 설계 원칙
@@ -240,11 +308,11 @@ examples/
   레지스트리에서 등록하거나 해제하는 단일 절차를 거치게 되어, 팀 폴더는 있는데
   레지스트리엔 없는 상태나 그 반대인 상태가 생기지 않습니다.
 - **팀 id와 표시 이름을 분리하지 않는 이유**: 초기 버전에서는 Journal Watch 타입
-  팀의 id를 `journal-watch`로 고정했다가, 표시 이름은 별도로 자유롭게 지은 적이
-  있습니다(예: `Daily Digest`). id와 표시 이름이 다르면 어느 쪽이 진짜 식별자인지
-  헷갈리기 때문에, 지금은 팀을 만들 때 id와 표시 이름을 같은 이름으로 통일하도록
-  안내합니다 (`type` 필드만 `journal-watch`로 고정되고, id는 자유롭게 지어도
-  됩니다 - 예: `examples/test-demo-rag/`).
+  팀의 id를 `journal-watch`로 고정했다가, 표시 이름은 별도로 `Trend Watch`처럼
+  지은 적이 있습니다. id와 표시 이름이 다르면 어느 쪽이 진짜 식별자인지 헷갈리기
+  때문에, 지금은 팀을 만들 때 id와 표시 이름을 같은 이름으로 통일하도록 안내합니다
+  (`type` 필드만 `journal-watch`로 고정되고, id는 자유롭게 지어도 됩니다 - 예:
+  `examples/test-demo-rag/`).
 
 ## 개발 상태
 
@@ -329,7 +397,20 @@ flowchart LR
     classDef pending fill:#BDBDBD,stroke:#212121,color:#212121,stroke-dasharray: 4 2
 ```
 
+### Pipeline at a glance
+
+| Stage | Command | What it does | Skill integration | Output |
+|---|---|---|---|---|
+| 1. Paper Collector | `/paper-collect <team-id>` | Searches the web for new papers based on the team's configuration (journals/topic/keywords) and research profile, shows the list to the user for confirmation, and ingests only the papers whose full text it could actually obtain | Follows the local project skill `markdown-mermaid-writing`'s style guide (grayscale palette, subgraph complexity tiers) when drawing the Research Framework diagram in each paper summary page | `raw/{slug}.json`, `papers/{slug}.md`, updates to related `concepts/`/`comparisons/`; papers without full text go to `wanted.md` |
+| 2. Research Synthesizer | `/synthesize <team-id>` | Re-reads the entire team wiki (papers/concepts/comparisons) and rewrites the research trend synthesis from scratch | Calls the `deep-research` skill from the external `academic-research-skills` plugin in lit-review/quick mode to check whether search coverage is adequate and whether any angle was missed. The result is rewritten into this project's own Synthesis template rather than pasted as-is | `synthesis/latest.md` (previous version moved to `synthesis/history/`) |
+| 3. Research Advisor | `/advise <team-id>` (Research Team only) | Uses the freshly written synthesis and this team's research profile (`my-research.md`) to produce a theoretical discussion, research gaps, and implications tied to the user's own work | No external skill integration. Grounded only in the synthesis and `my-research.md` | `advisor/latest.md` (previous version moved to `advisor/history/`) |
+
+What each of the three stages does in detail follows below.
+
 ### Stage 1, Paper Collector (`/paper-collect <team-id>`)
+
+**Role**: finds papers the team cares about on the web, and formally ingests
+into the wiki only the ones whose original text can actually be read.
 
 1. Checks the team's configuration. A Journal Watch team checks its journal
    list (which may be empty, scoped only by field); a Research Team checks
@@ -351,7 +432,10 @@ flowchart LR
 5. For each confirmed paper, **tries to get the full text first.** If it's
    open access (arXiv, an open-access journal, PMC, an institutional
    repository, and similar), it reads the full text via WebFetch and grounds
-   methodology, key contributions, and limitations in that content.
+   methodology, key contributions, and limitations in that content. The
+   Research Framework section of the resulting summary page (the part that
+   draws the research pipeline as a mermaid diagram) always follows the
+   local project skill `markdown-mermaid-writing`'s style guide.
    **Abstract-only papers are never ingested into raw or the wiki.** When
    the full text is genuinely unreachable (paywalled), only papers that
    look highly relevant to this team's research are added to `wanted.md` as
@@ -359,26 +443,93 @@ flowchart LR
    or created, and a comparison page is updated if the paper contrasts
    methodologically with an existing one.
 
+**Output**: `raw/{slug}.json` (facts only), `papers/{slug}.md` (AI-written
+summary in a fixed six-section template), updates to related
+`concepts/`/`comparisons/`, and `wanted.md` for papers whose full text
+couldn't be obtained.
+
 Paywalled papers the full text couldn't be reached for show up in
 `wanted.md`. If you already have a PDF you obtained yourself, use
 `/paper-review-pdf <team-id>`. It finds unprocessed PDFs in the team's
 `raw/` folder, ingests them from the full text, and removes the matching
-entry from `wanted.md` once ingestion succeeds. See "Ingesting PDFs
-directly" below for details.
+entry from `wanted.md` once ingestion succeeds. This path also follows the
+same `markdown-mermaid-writing` style guide when drawing the Research
+Framework diagram. See "Ingesting PDFs directly" below for details.
 
 ### Stage 2, Research Synthesizer (`/synthesize <team-id>`)
 
-Re-reads the entire team wiki (papers, concepts, comparisons) and rewrites
-the research trend synthesis document from scratch. It is always a full
-rewrite rather than a partial edit; the previous version is moved to
-`synthesis/history/` and preserved.
+**Role**: steps back from individual paper summaries and re-reads everything
+the team wiki has accumulated to synthesize trends that no single paper
+summary shows on its own.
+
+1. Reads the team's entire `papers/`, `concepts/`, and `comparisons/`. If
+   there are zero papers yet, it tells the user to run `/paper-collect`
+   first and stops.
+2. **`deep-research` skill integration**: where possible, it calls the
+   external plugin `academic-research-skills`'s `deep-research` skill via
+   the Skill tool, in lit-review or quick mode, to check whether search
+   coverage so far is adequate and whether any angle is missing from a
+   cross-source synthesis perspective. (If `skillDirectories` hasn't
+   resolved in a given session and `deep-research` doesn't show up in the
+   Skill tool list, it falls back to reading that same plugin's
+   `deep-research/SKILL.md` directly and following its methodology - see
+   "Skill integration" below.) Either way, the final output is rewritten
+   into this project's own Synthesis template.
+3. If `synthesis/latest.md` already exists, moves it to
+   `synthesis/history/{date}.md`.
+4. Rewrites `synthesis/latest.md` from scratch, covering recent research
+   trends, a map of key concepts, dominant methodologies, emerging topics,
+   and the full list of papers covered. This is always a full rewrite, not
+   a partial edit.
+5. Updates the "Synthesis" section and recent-update log in `index.md`.
+
+**Output**: `synthesis/latest.md` (previous version preserved under
+`synthesis/history/`).
 
 ### Stage 3, Research Advisor (`/advise <team-id>`, Research Team only)
 
-Uses the freshly written synthesis together with this team's research
-profile (`my-research.md`) to produce a theoretical discussion, research
-gaps, and the implications of recent trends for the user's own work. Journal
-Watch teams have neither this stage nor a research profile.
+**Role**: takes the research trend synthesis just written and connects it
+directly to the user's own research, answering "so what does this mean for
+my work." Journal Watch teams have neither this stage nor a research profile,
+since they aren't tied to a specific research topic.
+
+1. Stops if `advisor` isn't in the team's `pipeline` array (i.e. it's a
+   Journal Watch team).
+2. If `synthesis/latest.md` doesn't exist, tells the user to run
+   `/synthesize` first.
+3. Reads `my-research.md` (the research profile). If it's empty, tells the
+   user to fill it in via `/my-research-setup`, but proceeds as far as
+   possible with whatever information is already there.
+4. Reads `synthesis/latest.md` and the entire team wiki
+   (papers/concepts/comparisons). **Calls no external skill** - this stage
+   relies solely on the synthesis the Synthesizer already vetted with
+   deep-research, and on the research profile the user wrote themselves.
+5. If `advisor/latest.md` already exists, moves it to
+   `advisor/history/{date}.md`.
+6. Rewrites `advisor/latest.md` from scratch, covering the relationship to
+   the user's own research, theoretical discussion, research gaps, key
+   comparisons/concepts, and the implications of recent trends for the
+   user's work. Every claim cites the team wiki via `[[slug]]`.
+7. Updates the "Advisor" section and recent-update log in `index.md`.
+
+**Output**: `advisor/latest.md` (previous version preserved under
+`advisor/history/`).
+
+## Skill integration
+
+This pipeline uses Claude Code's skill ecosystem in two different ways: one
+external plugin skill and one local project skill.
+
+| Skill | How it's wired in | Which commands use it | Purpose |
+|---|---|---|---|
+| `deep-research` (external plugin `academic-research-skills`) | Connected only within this project's scope via `skillDirectories` in `.claude/settings.json`. Each command first tries calling it through the Skill tool; if the session hasn't loaded it yet and it doesn't show up in the Skill tool list, the command falls back to reading that plugin folder's `SKILL.md` directly and following its methodology | `/synthesize` (checks search coverage in lit-review/quick mode), `/my-research-setup` (formalizes research questions via Socratic guided research dialogue mode), `/concept-review` (re-vets merge/restructure candidates in quick mode) | All three commands rewrite deep-research's output into this project's own template format rather than pasting it in as-is |
+| `markdown-mermaid-writing` (local project skill, cloned directly under `.claude/skills/`) | Auto-recognized simply by living under `.claude/skills/`, with no `skillDirectories` entry needed - so the fallback path above never applies to it | `/paper-collect`, `/paper-review-pdf` (when drawing the Research Framework diagram in a paper summary page) | Follows the style guide's subgraph complexity tiers, `classDef` color rules, and accessibility (`accTitle`/`accDescr`) conventions, customized for this project into a four-step grayscale palette |
+
+Journal prioritization (deciding which journals are well-regarded in a given
+field) also draws on the `academic-research-skills` plugin's
+`academic-paper-reviewer` reference material (`top_journals_by_field.md`).
+The exact integration rules are fully defined in the "External skill
+integration" section of [`schema/schema.md`](schema/schema.md).
 
 ## Wiki structure
 
@@ -453,7 +604,7 @@ way to see exactly what the pipeline produces.
    ```
    data/
      teams.json                       start as {"teams": []}
-     journal-watch/config.json        name is up to you, but keeping id and folder name identical is recommended
+     trend-watch/config.json          name is up to you, but keeping id and folder name identical is recommended
      teams/_template/config.json, my-research.md, raw/
    ```
    The research profile (`my-research.md`) lives **inside each Research
@@ -475,9 +626,7 @@ way to see exactly what the pipeline produces.
 - `/paper-collect <team-id>` - searches the web for today's new papers based
   on that team's configuration and research profile.
 - `/paper-review-pdf <team-id>` - instead of a web search, reviews a PDF the
-  user placed in `raw/` and ingests it based on the full text. The PDF can be
-  named anything. It reads the title and year from the text and renames the
-  file to the standard slug format automatically.
+  user placed in `raw/` and ingests it based on the full text.
 - `/synthesize <team-id>` - re-analyzes the accumulated wiki and refreshes
   the research trend synthesis.
 - `/advise <team-id>` - (Research Team only) produces insights based on the
@@ -494,13 +643,14 @@ way to see exactly what the pipeline produces.
   existing prose citation), tag near-duplicate consolidation, and suggesting
   new concept pages for themes shared across multiple papers are applied
   after confirmation.
-- `/concept-review <team-id>` - compares everything in `concepts/` and
-  `comparisons/` against each other to find structural duplication. It merges
-  pages that describe the same concept or comparison under different names,
-  and updates existing concept definitions to reflect newly added papers,
-  after confirmation. Where `/wiki-review` checks individual pages, this
-  command works on the structure of the whole `concepts/`/`comparisons/`
-  folders.
+- `/concept-review <team-id>` - compares every page in `concepts/` and
+  `comparisons/` against each other to find structural duplicates (the same
+  concept or comparison built twice under different slugs) and candidates
+  for merging or restructuring. Where `/wiki-review` checks pages one at a
+  time, this command compares concept/comparison pages against each other.
+  Candidates are re-checked with the `deep-research` skill before the user
+  confirms and the merge actually happens. Pages that disappear in a merge
+  are never deleted - they're left as redirect stubs.
 
 A typical day is `/paper-collect <team-id>` followed by `/synthesize
 <team-id>`, with `/advise <team-id>` run once a few syntheses have
@@ -524,7 +674,7 @@ examples/
 |---|---|
 | `schema/schema.md` | Defines the wiki folder layout, the raw/wiki storage split, every document template, and the journal-prioritization rule. Every command is instructed to read this file first and apply its rules, so the rules live in exactly one place - changing a rule never requires touching every command. |
 | `schema/templates/*` | The skeleton each real document is filled into. Paper summaries are locked to a fixed structure so AI-written summaries stay consistently searchable instead of drifting into a different shape per paper. |
-| `.claude/commands/*.md` | Each file is one slash command. `paper-collect.md`, `synthesize.md`, and `advise.md` form the core pipeline; the rest handle team management and status reporting. |
+| `.claude/commands/*.md` | Each file is one slash command. `paper-collect.md`, `synthesize.md`, and `advise.md` form the core pipeline; `wiki-review.md` and `concept-review.md` handle wiki maintenance; the rest handle team management and status reporting. |
 | `examples/test-demo-rag/` | A finished example team produced by actually running the pipeline. |
 
 ## Design principles
@@ -547,7 +697,7 @@ examples/
   matching registry entry, or vice versa.
 - **Why team id and display name are kept identical**: an earlier version
   fixed the Journal Watch team's id to `journal-watch` while giving it a
-  separate display name (e.g. "Daily Digest"). Having a different id and
+  separate display name like "Trend Watch." Having a different id and
   display name made it unclear which one was the real identifier, so teams
   are now named so id and display name match (only the `type` field stays
   fixed as `journal-watch`; the id itself is free to choose - see
