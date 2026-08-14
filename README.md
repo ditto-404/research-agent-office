@@ -179,7 +179,8 @@ Collector, Research Synthesizer, Research Advisor 전 과정을 실행한 결과
 - `/paper-collect <team-id>` - 해당 팀 설정과 연구 프로필을 기준으로 오늘의
   신규 논문을 웹에서 검색합니다.
 - `/paper-review-pdf <team-id>` - 웹 검색이 아니라, 사용자가 직접 `raw/`에 넣어둔
-  PDF 원문을 전문 기반으로 검토해 위키에 반영합니다.
+  PDF 원문을 전문 기반으로 검토해 위키에 반영합니다. PDF 파일명은 아무거나
+  넣어도 됩니다. 원문에서 제목과 연도를 읽어 표준 형식으로 자동 리네임합니다.
 - `/synthesize <team-id>` - 지금까지 쌓인 위키를 분석해 연구 동향 종합을
   갱신합니다.
 - `/advise <team-id>` - (Research Team 전용) 종합 결과와 연구 프로필을 근거로
@@ -194,6 +195,11 @@ Collector, Research Synthesizer, Research Advisor 전 과정을 실행한 결과
   synthesis/advisor·개념 페이지 간 모순은 보고만 하고, 다른 논문 추가로 새로
   연결 가능해진 인용 백필링, 태그 근접 중복 정리, 여러 논문에 공통되지만 아직
   개념 페이지가 없는 것을 찾아 신설을 제안하는 것은 확인을 받은 뒤 실제로 고칩니다.
+- `/concept-review <team-id>` - `concepts/`와 `comparisons/` 전체를 서로 비교해
+  구조적 중복을 찾습니다. 사실상 같은 개념·비교를 다른 이름으로 따로 만든 경우를
+  병합하고, 신규 논문을 반영해 기존 개념 정의를 갱신하는 안을 확인 후 실제로
+  고칩니다. `wiki-review`가 개별 페이지 점검이라면, 이 커맨드는 concepts/
+  comparisons 폴더 전체의 구조를 다룹니다.
 
 일반적인 하루 사용 흐름은 `/paper-collect <team-id>` 다음 `/synthesize <team-id>`
 순서이며, synthesis가 몇 차례 쌓인 뒤 `/advise <team-id>`를 실행합니다.
@@ -207,7 +213,7 @@ schema/
   schema.md                   위키 운영 규칙 - 모든 Agent가 따르는 단일 진실
   templates/                  논문 / 개념 / 비교 / synthesis / advisor / team-config / my-research 템플릿
 .claude/
-  commands/                   실제 Agent 파이프라인 (커스텀 슬래시 커맨드 11개)
+  commands/                   실제 Agent 파이프라인 (커스텀 슬래시 커맨드 12개)
 examples/
   test-demo-rag/               실제로 파이프라인을 돌려서 만든 예시 팀 전체
 ```
@@ -469,7 +475,9 @@ way to see exactly what the pipeline produces.
 - `/paper-collect <team-id>` - searches the web for today's new papers based
   on that team's configuration and research profile.
 - `/paper-review-pdf <team-id>` - instead of a web search, reviews a PDF the
-  user placed in `raw/` and ingests it based on the full text.
+  user placed in `raw/` and ingests it based on the full text. The PDF can be
+  named anything. It reads the title and year from the text and renames the
+  file to the standard slug format automatically.
 - `/synthesize <team-id>` - re-analyzes the accumulated wiki and refreshes
   the research trend synthesis.
 - `/advise <team-id>` - (Research Team only) produces insights based on the
@@ -486,6 +494,13 @@ way to see exactly what the pipeline produces.
   existing prose citation), tag near-duplicate consolidation, and suggesting
   new concept pages for themes shared across multiple papers are applied
   after confirmation.
+- `/concept-review <team-id>` - compares everything in `concepts/` and
+  `comparisons/` against each other to find structural duplication. It merges
+  pages that describe the same concept or comparison under different names,
+  and updates existing concept definitions to reflect newly added papers,
+  after confirmation. Where `/wiki-review` checks individual pages, this
+  command works on the structure of the whole `concepts/`/`comparisons/`
+  folders.
 
 A typical day is `/paper-collect <team-id>` followed by `/synthesize
 <team-id>`, with `/advise <team-id>` run once a few syntheses have
@@ -500,7 +515,7 @@ schema/
   schema.md                   Wiki operating rules - the single source of truth every agent follows
   templates/                  Templates for papers / concepts / comparisons / synthesis / advisor / team config / research profile
 .claude/
-  commands/                   The actual agent pipeline (11 custom slash commands)
+  commands/                   The actual agent pipeline (12 custom slash commands)
 examples/
   test-demo-rag/               A full example team produced by actually running the pipeline
 ```
