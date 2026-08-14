@@ -359,13 +359,9 @@ mermaid 코드펜스를 노트에 직접 쓴다(별도 파일로 렌더링해 �
 **`<div>` 등 HTML로 감싸지 않는다** - `<div>`와 코드펜스 사이에 빈 줄을 둬도
 Obsidian이 `</div>`를 만날 때까지 그 사이 전체를 raw HTML로 삼켜서, 코드펜스가
 mermaid로 렌더링되지 않고 줄바꿈까지 뭉개진 텍스트로 그대로 노출된다(실제로 겪은
-문제, Reading view에서 확인). 마크다운 소스에는 순수 mermaid 코드펜스만 쓴다:
-
-````
-```mermaid
-...
-```
-````
+문제, Reading view에서 확인). 마크다운 소스에는 순수 mermaid 코드펜스만 쓴다 -
+여는 줄은 백틱 3개 뒤에 바로 `mermaid`, 그 아래에 다이어그램 내용, 마지막 줄은
+백틱 3개만 있는 구조를 그대로 쓰고 다른 문법으로 감싸지 않는다.
 
 다이어그램 크기는 각 팀 Obsidian vault의 `.obsidian/snippets/mermaid-scroll.css`
 CSS 스니펫으로 제어한다 - 마크다운 소스를 건드리지 않고 Obsidian이 코드펜스를
