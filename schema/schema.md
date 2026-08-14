@@ -1,3 +1,25 @@
+<!--
+이 파일은 GitHub 공개 저장소(research-agent-office)의 schema/schema.md와
+내용이 100% 동일해야 하는 로컬 사본이다. 같은 폴더의 schema.md(로컬 전체
+버전, private 데이터 저장소 data/pipeline/ 스냅샷용 완전판 - 프론트매터,
+Research Framework/classDef 색상 가이드, 데이터·변수 HTML 표, papers.base
+포함)와는 의도적으로 다르다. 이 파일은 그런 로컬 전용 내용을 뺀 범용 템플릿
+버전이며, 팀 이름·실제 경로 대신 <journal-watch-id>/<WIKI_VAULT_ROOT> 같은
+범용 플레이스홀더를 쓴다.
+
+수정 절차: 로컬 파이프라인 규칙이 바뀌어 공개 저장소에도 반영해야 하면, 이
+파일을 직접 고친 뒤(schema.md의 해당 변경을 이 파일 스타일에 맞게 옮겨 적는
+방식으로) GitHub research-agent-office 저장소의 schema/schema.md에 이 파일
+내용을 그대로 push한다. **schema.md(로컬 전체판)를 그대로 push하지 않는다** -
+2026-08-14에 그 실수로 공개 저장소의 schema.md가 완전판으로 통째로
+덮어써진 적이 있다(README.md는 원래도 공개/비공개용이 각자 로컬에 따로
+있어 이런 사고가 없었는데, schema.md는 공개용 사본이 로컬에 없어서 발생).
+
+같은 이유로 `schema/templates/paper.md`(공개 저장소)도 이 파일의 "논문 요약
+페이지 템플릿" 섹션과 같은 단순 버전을 쓴다 - 로컬 `schema/templates/paper.md`
+와는 다르다.
+-->
+
 # Research Office 위키 운영 규칙 (Schema)
 
 이 문서는 Agent(Claude)가 팀별 위키를 어떻게 관리해야 하는지 정의한다. 모든 팀
