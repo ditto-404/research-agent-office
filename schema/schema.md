@@ -361,11 +361,11 @@ Obsidian이 `</div>`를 만날 때까지 그 사이 전체를 raw HTML로 삼켜
 mermaid로 렌더링되지 않고 줄바꿈까지 뭉개진 텍스트로 그대로 노출된다(실제로 겪은
 문제, Reading view에서 확인). 마크다운 소스에는 순수 mermaid 코드펜스만 쓴다:
 
-```
+````
 ```mermaid
 ...
 ```
-```
+````
 
 다이어그램 크기는 각 팀 Obsidian vault의 `.obsidian/snippets/mermaid-scroll.css`
 CSS 스니펫으로 제어한다 - 마크다운 소스를 건드리지 않고 Obsidian이 코드펜스를
