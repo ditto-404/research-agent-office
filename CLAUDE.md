@@ -68,6 +68,7 @@ Research Team  → raw/ + wiki  → Synthesizer → Advisor
 | `/journal-watch-setup` | Journal Watch의 저널 목록/조건 편집 |
 | `/office-status` | 전체 팀 상태를 스캔해 `data/status.json` 갱신 |
 | `/wiki-review <team-id>` | 팀 위키 정리. 고아 페이지·오래된 synthesis/advisor는 보고만, 인용 백필링·태그 중복 정리·개념 페이지 신설 후보는 확인 후 실제로 고침 |
+| `/concept-review <team-id>` | concepts/comparisons 전체를 서로 비교해 구조적 중복 병합·재구성 후보를 찾아 확인 후 고침 (deep-research 스킬 연동) |
 
 ## 원본 vs AI 생성 지식 분리 (중요)
 
