@@ -55,30 +55,23 @@ argument-hint: <team-id>
 6. 확인받으면 각 논문에 대해 `schema/schema.md`의 "Ingest 절차"(2a/2b 분기)를 그대로
    수행한다 (raw는 `data/{team-path}/raw/`에, 위키 콘텐츠는 `{wiki_path}/`에 쓴다 -
    서로 다른 폴더 트리라는 점에 유의):
-   - **전문(full text) 확보를 먼저 시도한다.** 오픈 액세스 소스(arXiv, 오픈 액세스
-     저널, PMC, 기관 리포지토리 등)면 WebFetch로 전문을 직접 읽는다 - 초록만 있는
-     페이지(예: `arxiv.org/abs/{id}`) 대신 전문이 있는 페이지(예:
-     `arxiv.org/pdf/{id}`, `arxiv.org/html/{id}`)를 쓰고, Semantic Scholar/OpenAlex
-     응답에 오픈 액세스 PDF 링크가 있으면 그것도 활용한다. 구독형 출판사 저널은
-     페이지에 "Open Access"/CC BY 라이선스 표시가 있는지 확인 - 있으면 그
-     페이지에서 전문을 직접 읽고, 없으면(대부분 페이월) 2b로 처리한다.
-   - **전문 확보 성공(2a)**: `data/{team-path}/raw/{slug}.json`을 "원본 메타데이터
-     스키마" 형식으로 작성 (해석 없이 사실만, `source_type: "full-text"`).
-     `{wiki_path}/papers/{slug}.md`를 "논문 요약 페이지 템플릿" 형식으로 작성한다 -
-     방법론/핵심 기여/한계 등 각 섹션을 실제 본문 내용에 근거해 구체적으로 쓴다.
-     기존 `{wiki_path}/concepts/`와 관련되면 해당 개념 페이지 갱신(핵심 개념 승격
-     여부 판단 포함), 새로운 재사용 가능한 개념이면 새로 생성. 방법론적으로
-     대조되는 기존 논문이 있으면 `{wiki_path}/comparisons/` 갱신/생성.
-     `{wiki_path}/index.md`에 신규/수정 내역 기록.
-   - **전문 확보 실패(2b, 페이월 등)**: `raw/{slug}.json`도 `wiki/papers/{slug}.md`도
-     만들지 않는다 - 초록만으로는 raw/wiki에 반영하지 않는다. 대신 이 논문이 이
+   - **전문을 직접 확보하지 않는다.** 오픈 액세스든 아니든 WebFetch로 전문을 읽으려
+     시도하지 말고, 후보로 판단된 논문은 **예외 없이 아래 2b(=`wanted.md` 등재)로
+     보낸다.** `raw/{slug}.pdf`가 없는 상태에서 `raw/{slug}.json`이나
+     `papers/{slug}.md`를 만드는 것은 금지다. 근거는 `schema/schema.md`의
+     "Ingest 절차" 상단 콜아웃 참고 - 웹 경유 전문으로 작성한 페이지를 나중에 실제
+     PDF와 대조했더니 절반 가까이에서 수치·인용 오류가 나왔다.
+   - **(2a 전문 반영 경로는 `/paper-review-pdf` 전용이다.)** 사용자가 PDF를 `raw/`에
+     넣은 뒤 그 커맨드로 반영한다. `/paper-collect`에서는 쓰지 않는다.
+   - **모든 후보 = 2b**: `raw/{slug}.json`도 `wiki/papers/{slug}.md`도
+     만들지 않는다. 대신 이 논문이 이
      팀의 연구(주제/키워드, research-team이면 `my-research.md`의 이론적
      배경·방법론)와 관련성이 높아 보이는지 판단한다. 관련성이 높으면
      `{wiki_path}/wanted.md`에 "관심 논문 목록 템플릿" 형식으로 추가한다(같은
      논문이 이미 목록에 있으면 중복 추가하지 않는다). 관련성이 낮으면 그냥
      건너뛴다.
 7. `data/{team-path}/config.json`의 `last_run`을 오늘 날짜(ISO 8601)로 갱신.
-8. 마지막에 무엇을 몇 편 정식 반영했는지(전문 확보), 몇 편을 `wanted.md`에
+8. 마지막에 몇 편을 `wanted.md`에
    후보로 올렸는지, 새로 만들거나 갱신한 concept/comparison 페이지가 무엇인지
    간단히 요약해서 사용자에게 보고한다. `wanted.md`에 새로 올라간 논문이 있으면
    제목과 링크를 함께 보여줘서 사용자가 PDF를 구할지 판단할 수 있게 한다.
